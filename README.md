@@ -36,3 +36,5 @@ This extension currently only allows resolveCustomMetadataAndLoad(), do pull req
 
 
 You can also add functions to ExtensionLoaderCustomManagement when needed.
+
+This extension is sponsored by [.VDMi/](http://www.vdmi.nl/)
