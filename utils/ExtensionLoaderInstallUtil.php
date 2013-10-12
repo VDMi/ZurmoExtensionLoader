@@ -4,15 +4,27 @@
  */
 class ExtensionLoaderInstallUtil
 {
-  public static function resolveCustomMetadataAndLoad()
+
+  public static function resolveCustomMetadataAndLoad(MessageLogger $messageLogger = null)
   {
-    ExtensionLoaderInstallUtil::triggerFunction(__FUNCTION__);
+    ExtensionLoaderInstallUtil::triggerFunction(__FUNCTION__, $messageLogger);
   }
 
-  public static function triggerFunction($function) {
+  public static function runAfterInstallationDefaultDataLoad(MessageLogger $messageLogger) {
+    ExtensionLoaderInstallUtil::triggerFunction(__FUNCTION__, $messageLogger);
+  }
+
+  public static function runImportsForImportCommand(ImportMessageLogger $messageLogger, $importName = null) {
+    ExtensionLoaderInstallUtil::triggerFunction(__FUNCTION__, $messageLogger, $importName);
+  }
+
+  public static function triggerFunction() {
+    $arg_list = func_get_args();
+    $function = $arg_list[0];
+    unset($arg_list[0]);
     $classes = ExtensionLoaderInstallUtil::findAllClassesWithFunction($function);
     foreach($classes as $class) {
-      $class->{$function}();
+      call_user_func_array(array($class, $function), $arg_list);
     }
   }
 
@@ -23,7 +35,6 @@ class ExtensionLoaderInstallUtil
     // Check if our custom extension dir exists
     if (is_dir($customInstallUtilDirectoryName))
     {
-
       // Find all the folders in this custom folder
       $folders = scandir($customInstallUtilDirectoryName);
       // Loop through the folders
@@ -44,7 +55,7 @@ class ExtensionLoaderInstallUtil
               $pathInfo = pathinfo($fullFilePath);
               if(isset($pathInfo['filename'])) {
                 $className = $pathInfo['filename'];
-                if(class_exists($className)) {
+                if(class_exists($className, false)) {
                   $classInstance = new ReflectionClass($className);
                   if($classInstance->hasMethod($function)) {
                     $functions[] = $classInstance->newInstance();
@@ -59,4 +70,3 @@ class ExtensionLoaderInstallUtil
     return $functions;
   }
 }
-?>
